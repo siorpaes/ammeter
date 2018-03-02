@@ -336,7 +336,7 @@
               <MiscControls>--C99</MiscControls>
               <Define>USE_HAL_DRIVER,STM32F070xB</Define>
               <Undefine></Undefine>
-              <IncludePath>../Inc;../Drivers/STM32F0xx_HAL_Driver/Inc;../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy;../Drivers/CMSIS/Device/ST/STM32F0xx/Include;../Drivers/CMSIS/Include;..\..\INA219</IncludePath>
+              <IncludePath>../Inc; ../Drivers/STM32F0xx_HAL_Driver/Inc; ../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy; ../Drivers/CMSIS/Device/ST/STM32F0xx/Include; ../Drivers/CMSIS/Include; ..\..\INA219</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -377,9 +377,6 @@
         </TargetArmAds>
       </TargetOption>
       <Groups>
-        <Group>
-          <GroupName>::CMSIS</GroupName>
-        </Group>
         <Group>
           <GroupName>Drivers/CMSIS</GroupName>
           <Files>
@@ -524,6 +521,9 @@
               <FilePath>..\..\INA219\Adafruit_INA219.c</FilePath>
             </File>
           </Files>
+        </Group>
+        <Group>
+          <GroupName>::CMSIS</GroupName>
         </Group>
       </Groups>
     </Target>
