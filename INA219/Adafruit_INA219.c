@@ -36,9 +36,11 @@ extern I2C_HandleTypeDef hi2c1 ;
 uint32_t ina219_currentDivider_mA;
 uint32_t ina219_powerMultiplier_mW;
 
-uint8_t ina219_i2caddr = (INA219_ADDRESS);
 uint32_t ina219_calValue;
 
+#define BUFFERLEN 64
+int16_t contBuffer[BUFFERLEN];
+unsigned int bufferPos;
 
 /**************************************************************************/
 /*! 
@@ -50,7 +52,7 @@ void wireWriteRegister (uint8_t reg, uint16_t value)
 	uint8_t i2c_temp[2];
 	i2c_temp[0] = value>>8;
 	i2c_temp[1] = value;
-	HAL_I2C_Mem_Write(&hi2c1, ina219_i2caddr<<1, (uint16_t)reg, 1, i2c_temp, 2, 0xffffffff);
+	HAL_I2C_Mem_Write(&hi2c1, INA219_ADDRESS<<1, (uint16_t)reg, 1, i2c_temp, 2, 0xffffffff);
 	HAL_Delay(1);
 }
 
@@ -62,7 +64,7 @@ void wireWriteRegister (uint8_t reg, uint16_t value)
 void wireReadRegister(uint8_t reg, uint16_t *value)
 {
 	uint8_t i2c_temp[2];
-	HAL_I2C_Mem_Read(&hi2c1, ina219_i2caddr<<1, (uint16_t)reg, 1,i2c_temp, 2, 0xffffffff);
+	HAL_I2C_Mem_Read(&hi2c1, INA219_ADDRESS<<1, (uint16_t)reg, 1,i2c_temp, 2, 0xffffffff);
 	HAL_Delay(1);
 	*value = ((uint16_t)i2c_temp[0]<<8 )|(uint16_t)i2c_temp[1];
 }
@@ -459,4 +461,68 @@ float getPower_mW() {
   float valueDec = getPower_raw();
   valueDec *= ina219_powerMultiplier_mW;
   return valueDec;
+}
+
+
+/* Initialize continuous measurement */
+int contMeasureInit(uint8_t reg)
+{
+	HAL_StatusTypeDef status;
+	
+	/* Set register pointer to desired register */
+	status = HAL_I2C_Master_Transmit(&hi2c1, INA219_ADDRESS<<1, &reg, 1, 0xffffffff);
+	if(status != HAL_OK)
+		while(1);
+	
+	bufferPos = 0;
+	
+	return 0;
+}
+
+
+/* Updates measurement buffers. To be called periodically by application.
+ * @retval Current buffer position
+ */
+int contMeasureUpdate(void)
+{
+	HAL_StatusTypeDef status;
+	uint8_t measure[2];
+
+	status = HAL_I2C_Master_Receive(&hi2c1, INA219_ADDRESS<<1, (uint8_t*)&measure, 2, 0xffffffff);
+	if(status != HAL_OK)
+		while(1);
+
+	/* Change endinanness */
+	contBuffer[bufferPos++] = ina219_powerMultiplier_mW * (((uint16_t)measure[0]<<8)|(uint16_t)measure[1]);
+	bufferPos %= BUFFERLEN;
+
+	return bufferPos;
+}
+
+/* Temptative to read sensor via DMA.
+ * Not working as sensor replies with 0xff after first two bytes.
+ */
+int getPowerDMA(int16_t* powerBuf, int count)
+{
+	HAL_StatusTypeDef status;
+	uint8_t reg = INA219_REG_POWER;
+
+	/* Set pointer to power register */
+	status = HAL_I2C_Master_Transmit(&hi2c1, INA219_ADDRESS<<1, &reg, 1, 0xffffffff);
+	if(status != HAL_OK)
+		while(1);
+
+#if 1
+	/* Read a bunch of power measurements */
+	status = HAL_I2C_Master_Receive_DMA(&hi2c1, INA219_ADDRESS<<1, (uint8_t*)powerBuf, 2*count);
+	if(status != HAL_OK)
+		while(1);
+
+#else
+	status = HAL_I2C_Master_Receive(&hi2c1, INA219_ADDRESS<<1, (uint8_t*)powerBuf, 2*count, 0xffffffff);
+	if(status != HAL_OK)
+		while(1);
+#endif
+	
+	return status;
 }
