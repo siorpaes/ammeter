@@ -17,14 +17,6 @@
 #ifndef _LIB_ADAFRUIT_INA219_
 #define _LIB_ADAFRUIT_INA219_
 
-#if ARDUINO >= 100
- #include "Arduino.h"
-#else
- #include "WProgram.h"
-#endif
-
-#include <Wire.h>
-
 /**************************************************************************/
 /*! 
     @brief  default I2C address
@@ -208,36 +200,19 @@ enum {
     @brief  Class that stores state and functions for interacting with INA219 current/power monitor IC
 */
 /**************************************************************************/
-class Adafruit_INA219{
- public:
-  Adafruit_INA219(uint8_t addr = INA219_ADDRESS);
-  void begin(void);
-  void begin(TwoWire *theWire);
-  void setCalibration_32V_2A(void);
-  void setCalibration_32V_1A(void);
-  void setCalibration_16V_400mA(void);
-  float getBusVoltage_V(void);
-  float getShuntVoltage_mV(void);
-  float getCurrent_mA(void);
-  float getPower_mW(void);
+void setCalibration_32V_2A(void);
+void setCalibration_32V_1A(void);
+void setCalibration_16V_400mA(void);
+float getBusVoltage_V(void);
+float getShuntVoltage_mV(void);
+float getCurrent_mA(void);
+float getPower_mW(void);
 
- private:
-  TwoWire *_i2c;
-
-  uint8_t ina219_i2caddr;
-  uint32_t ina219_calValue;
-  // The following multipliers are used to convert raw current and power
-  // values to mA and mW, taking into account the current config settings
-  uint32_t ina219_currentDivider_mA;
-  uint32_t ina219_powerMultiplier_mW;
-
-  void init();
-  void wireWriteRegister(uint8_t reg, uint16_t value);
-  void wireReadRegister(uint8_t reg, uint16_t *value);
-  int16_t getBusVoltage_raw(void);
-  int16_t getShuntVoltage_raw(void);
-  int16_t getCurrent_raw(void);
-  int16_t getPower_raw(void);
-};
+void wireWriteRegister(uint8_t reg, uint16_t value);
+void wireReadRegister(uint8_t reg, uint16_t *value);
+int16_t getBusVoltage_raw(void);
+int16_t getShuntVoltage_raw(void);
+int16_t getCurrent_raw(void);
+int16_t getPower_raw(void);
 
 #endif
