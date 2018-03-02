@@ -510,7 +510,7 @@
 
   <Group>
     <GroupName>INA219</GroupName>
-    <tvExp>1</tvExp>
+    <tvExp>0</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
@@ -523,6 +523,50 @@
       <bDave2>0</bDave2>
       <PathWithFileName>..\..\INA219\Adafruit_INA219.c</PathWithFileName>
       <FilenameWithoutPath>Adafruit_INA219.c</FilenameWithoutPath>
+      <RteFlg>0</RteFlg>
+      <bShared>0</bShared>
+    </File>
+  </Group>
+
+  <Group>
+    <GroupName>SSD1306</GroupName>
+    <tvExp>1</tvExp>
+    <tvExpOptDlg>0</tvExpOptDlg>
+    <cbSel>0</cbSel>
+    <RteFlg>0</RteFlg>
+    <File>
+      <GroupNumber>6</GroupNumber>
+      <FileNumber>25</FileNumber>
+      <FileType>1</FileType>
+      <tvExp>0</tvExp>
+      <tvExpOptDlg>0</tvExpOptDlg>
+      <bDave2>0</bDave2>
+      <PathWithFileName>..\..\SSD1306\Adafruit_GFX.c</PathWithFileName>
+      <FilenameWithoutPath>Adafruit_GFX.c</FilenameWithoutPath>
+      <RteFlg>0</RteFlg>
+      <bShared>0</bShared>
+    </File>
+    <File>
+      <GroupNumber>6</GroupNumber>
+      <FileNumber>26</FileNumber>
+      <FileType>1</FileType>
+      <tvExp>0</tvExp>
+      <tvExpOptDlg>0</tvExpOptDlg>
+      <bDave2>0</bDave2>
+      <PathWithFileName>..\..\SSD1306\glcdfont.c</PathWithFileName>
+      <FilenameWithoutPath>glcdfont.c</FilenameWithoutPath>
+      <RteFlg>0</RteFlg>
+      <bShared>0</bShared>
+    </File>
+    <File>
+      <GroupNumber>6</GroupNumber>
+      <FileNumber>27</FileNumber>
+      <FileType>1</FileType>
+      <tvExp>0</tvExp>
+      <tvExpOptDlg>0</tvExpOptDlg>
+      <bDave2>0</bDave2>
+      <PathWithFileName>..\..\SSD1306\ssd1306.c</PathWithFileName>
+      <FilenameWithoutPath>ssd1306.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>

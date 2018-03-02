@@ -336,7 +336,7 @@
               <MiscControls>--C99</MiscControls>
               <Define>USE_HAL_DRIVER,STM32F070xB</Define>
               <Undefine></Undefine>
-              <IncludePath>../Inc;     ../Drivers/STM32F0xx_HAL_Driver/Inc;     ../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy;     ../Drivers/CMSIS/Device/ST/STM32F0xx/Include;     ../Drivers/CMSIS/Include;     ..\..\INA219</IncludePath>
+              <IncludePath>../Inc; ../Drivers/STM32F0xx_HAL_Driver/Inc; ../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy; ../Drivers/CMSIS/Device/ST/STM32F0xx/Include; ../Drivers/CMSIS/Include; ..\..\INA219; ..\..\SSD1306</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -519,6 +519,26 @@
               <FileName>Adafruit_INA219.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\INA219\Adafruit_INA219.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>SSD1306</GroupName>
+          <Files>
+            <File>
+              <FileName>Adafruit_GFX.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\SSD1306\Adafruit_GFX.c</FilePath>
+            </File>
+            <File>
+              <FileName>glcdfont.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\SSD1306\glcdfont.c</FilePath>
+            </File>
+            <File>
+              <FileName>ssd1306.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\SSD1306\ssd1306.c</FilePath>
             </File>
           </Files>
         </Group>

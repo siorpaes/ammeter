@@ -30,7 +30,9 @@ All text above, and the splash screen below must be included in any redistributi
 
 #define SSD1306_ADDR (0x78)
 
-extern I2C_HandleTypeDef hi2c1;
+/* Todo: set I2C handler in init function */
+extern I2C_HandleTypeDef hi2c2;
+I2C_HandleTypeDef* i2cHandle = &hi2c2;
 
 int8_t i2caddr;
 int8_t vccstate = 0;
@@ -200,7 +202,7 @@ void display(void)
     ssd1306_command(1); // Page end address
 #endif
 
-	HAL_I2C_Master_Transmit(&hi2c1, SSD1306_ADDR, framebuffer, sizeof(framebuffer), 0xffffffff);
+	HAL_I2C_Master_Transmit(i2cHandle, SSD1306_ADDR, framebuffer, sizeof(framebuffer), 0xffffffff);
 }
 
 // the most basic function, set a single pixel
@@ -249,7 +251,7 @@ void ssd1306_command(uint8_t c) {
 
 	buf[0] = 0;
 	buf[1] = c;
-	err = HAL_I2C_Master_Transmit(&hi2c1, SSD1306_ADDR, buf, 2, 0xffffffff);
+	err = HAL_I2C_Master_Transmit(i2cHandle, SSD1306_ADDR, buf, 2, 0xffffffff);
 	if(err != HAL_OK)
 		while(1);
 }

@@ -43,12 +43,15 @@
 /* USER CODE BEGIN Includes */
 #include <string.h>
 #include "Adafruit_INA219.h"
+#include "Adafruit_GFX.h"
+#include "ssd1306.h"
 
 
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
 I2C_HandleTypeDef hi2c1;
+I2C_HandleTypeDef hi2c2;
 
 SPI_HandleTypeDef hspi1;
 
@@ -68,6 +71,7 @@ static void MX_I2C1_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_SPI1_Init(void);
 static void MX_TIM6_Init(void);
+static void MX_I2C2_Init(void);
 
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
@@ -83,6 +87,8 @@ int main(void)
 
   /* USER CODE BEGIN 1 */
 	float current, busVoltage, shuntVoltage, power;
+	char caption[32];
+	int i;
   /* USER CODE END 1 */
 
   /* MCU Configuration----------------------------------------------------------*/
@@ -107,23 +113,33 @@ int main(void)
   MX_USART2_UART_Init();
   MX_SPI1_Init();
   MX_TIM6_Init();
+  MX_I2C2_Init();
 
   /* USER CODE BEGIN 2 */
-	HAL_TIM_Base_Start_IT(&htim6);
+	//HAL_TIM_Base_Start_IT(&htim6);
 	
 	setCalibration_16V_400mA();
 	//setCalibration_32V_1A();
+	ssd1306Init();
+	display();
+	HAL_Delay(200);
+	Adafruit_GFX(getWidth(), getHeight());
+	setTextSize(3);
+	setTextColor1(WHITE);
+	
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 	
+#if 0
 	extern int16_t contBuffer[];
 	contMeasureInit(INA219_REG_POWER);
 	while(1){
 		printf("Power %i mW\r\n", contBuffer[0]);
 		HAL_Delay(200);
 	}
+#endif
 	
   while (1)
   {
@@ -136,7 +152,24 @@ int main(void)
 		power = getPower_mW();
 
 		printf("%f mA, %f V %f mV %f mW\r\n", current, busVoltage, shuntVoltage, power);
-		HAL_Delay(200);
+		
+		
+		/* Print current and power on display */
+		clearDisplay();
+
+		setCursor(0, 0);
+		sprintf(caption, "%1.1f mA", current);
+		for(i=0; i<strlen(caption); i++)
+			write(caption[i]);
+
+		setCursor(0, 32);
+		sprintf(caption, "%1.1f mW", power);
+		for(i=0; i<strlen(caption); i++)
+			write(caption[i]);
+		
+		display();
+		
+		HAL_Delay(2);
   }
   /* USER CODE END 3 */
 
@@ -231,6 +264,40 @@ static void MX_I2C1_Init(void)
     /**I2C Fast mode Plus enable 
     */
   __HAL_SYSCFG_FASTMODEPLUS_ENABLE(I2C_FASTMODEPLUS_I2C1);
+
+}
+
+/* I2C2 init function */
+static void MX_I2C2_Init(void)
+{
+
+  hi2c2.Instance = I2C2;
+  hi2c2.Init.Timing = 0x20303E5D;
+  hi2c2.Init.OwnAddress1 = 0;
+  hi2c2.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+  hi2c2.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+  hi2c2.Init.OwnAddress2 = 0;
+  hi2c2.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
+  hi2c2.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+  hi2c2.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+  if (HAL_I2C_Init(&hi2c2) != HAL_OK)
+  {
+    _Error_Handler(__FILE__, __LINE__);
+  }
+
+    /**Configure Analogue filter 
+    */
+  if (HAL_I2CEx_ConfigAnalogFilter(&hi2c2, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
+  {
+    _Error_Handler(__FILE__, __LINE__);
+  }
+
+    /**Configure Digital filter 
+    */
+  if (HAL_I2CEx_ConfigDigitalFilter(&hi2c2, 0) != HAL_OK)
+  {
+    _Error_Handler(__FILE__, __LINE__);
+  }
 
 }
 
