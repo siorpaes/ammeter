@@ -79,6 +79,9 @@ static void MX_I2C2_Init(void);
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
+#define GRAPH_HEIGTH (64)
+#define GRAPH_WIDTH  (128)
+
 int16_t powerBuf[32];
 /* USER CODE END 0 */
 
@@ -88,7 +91,8 @@ int main(void)
   /* USER CODE BEGIN 1 */
 	float current, busVoltage, shuntVoltage, power;
 	char caption[32];
-	int i;
+	int i, nSamples;
+	int minVal, maxVal;
   /* USER CODE END 1 */
 
   /* MCU Configuration----------------------------------------------------------*/
@@ -116,15 +120,14 @@ int main(void)
   MX_I2C2_Init();
 
   /* USER CODE BEGIN 2 */
-	//HAL_TIM_Base_Start_IT(&htim6);
 	
 	setCalibration_16V_400mA();
 	//setCalibration_32V_1A();
 	ssd1306Init();
 	display();
-	HAL_Delay(200);
+	HAL_Delay(500);
 	Adafruit_GFX(getWidth(), getHeight());
-	setTextSize(3);
+	setTextSize(2);
 	setTextColor1(WHITE);
 	
   /* USER CODE END 2 */
@@ -132,9 +135,48 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 	
-#if 0
-	extern int16_t contBuffer[];
-	contMeasureInit(INA219_REG_POWER);
+#if 1
+	while(1){
+		extern int16_t contBuffer[];
+		contMeasureInit(INA219_REG_POWER);
+		
+		/* Wait until button is pressed */
+		while(HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin) == GPIO_PIN_SET);
+		HAL_TIM_Base_Start_IT(&htim6);
+
+		/* Wait until buttin is released */
+		while(HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin) == GPIO_PIN_RESET);
+		HAL_TIM_Base_Stop_IT(&htim6);
+		
+		nSamples = getNSamples();
+		minVal = maxVal = contBuffer[0];
+		for(i=1; i<nSamples; i++){
+			if(contBuffer[i] < minVal)
+				minVal = contBuffer[i];
+			if(contBuffer[i] > maxVal)
+				maxVal = contBuffer[i];
+		}
+
+		/* Normalize */
+		for(i=0; i<nSamples; i++)
+			contBuffer[i] -= minVal;
+
+		for(i=0; i<nSamples; i++){
+			contBuffer[i] *= (GRAPH_HEIGTH);
+			contBuffer[i] /= (maxVal - minVal);
+			if(contBuffer[i] == 0)
+				contBuffer[i] = 1;
+		}
+			
+		/* Plot */
+		clearDisplay();
+		for(i=0; i<GRAPH_WIDTH-1; i++){
+			drawLine(i, GRAPH_HEIGTH-contBuffer[i], i+1, GRAPH_HEIGTH-contBuffer[i+1], WHITE);
+		}
+		
+		display();
+	}
+
 	while(1){
 		printf("Power %i mW\r\n", contBuffer[0]);
 		HAL_Delay(200);
@@ -152,7 +194,6 @@ int main(void)
 		power = getPower_mW();
 
 		printf("%f mA, %f V %f mV %f mW\r\n", current, busVoltage, shuntVoltage, power);
-		
 		
 		/* Print current and power on display */
 		clearDisplay();

@@ -25,6 +25,7 @@
  */
 
 #include <stdint.h>
+#include <string.h>
 #include "Adafruit_INA219.h"
 #include "stm32f0xx_hal.h"
 
@@ -38,7 +39,7 @@ uint32_t ina219_powerMultiplier_mW;
 
 uint32_t ina219_calValue;
 
-#define BUFFERLEN 64
+#define BUFFERLEN 1024
 int16_t contBuffer[BUFFERLEN];
 unsigned int bufferPos;
 
@@ -475,6 +476,7 @@ int contMeasureInit(uint8_t reg)
 		while(1);
 	
 	bufferPos = 0;
+	memset(contBuffer, 0, sizeof(contBuffer));
 	
 	return 0;
 }
@@ -493,36 +495,14 @@ int contMeasureUpdate(void)
 		while(1);
 
 	/* Change endinanness */
-	contBuffer[bufferPos++] = ina219_powerMultiplier_mW * (((uint16_t)measure[0]<<8)|(uint16_t)measure[1]);
-	bufferPos %= BUFFERLEN;
+	if(bufferPos < BUFFERLEN)
+		contBuffer[bufferPos++] = ina219_powerMultiplier_mW * (((uint16_t)measure[0]<<8)|(uint16_t)measure[1]);
 
 	return bufferPos;
 }
 
-/* Temptative to read sensor via DMA.
- * Not working as sensor replies with 0xff after first two bytes.
- */
-int getPowerDMA(int16_t* powerBuf, int count)
+
+int getNSamples(void)
 {
-	HAL_StatusTypeDef status;
-	uint8_t reg = INA219_REG_POWER;
-
-	/* Set pointer to power register */
-	status = HAL_I2C_Master_Transmit(&hi2c1, INA219_ADDRESS<<1, &reg, 1, 0xffffffff);
-	if(status != HAL_OK)
-		while(1);
-
-#if 1
-	/* Read a bunch of power measurements */
-	status = HAL_I2C_Master_Receive_DMA(&hi2c1, INA219_ADDRESS<<1, (uint8_t*)powerBuf, 2*count);
-	if(status != HAL_OK)
-		while(1);
-
-#else
-	status = HAL_I2C_Master_Receive(&hi2c1, INA219_ADDRESS<<1, (uint8_t*)powerBuf, 2*count, 0xffffffff);
-	if(status != HAL_OK)
-		while(1);
-#endif
-	
-	return status;
+	return bufferPos;
 }
