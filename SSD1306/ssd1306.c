@@ -640,6 +640,17 @@ int scrollGraphInit(int endPageL)
 }
 
 
+/** Restores back original addressing mode so we can reuse Adafruit APIs
+ */
+int scrollGraphDeinit(void)
+{
+	/* Revert Memory Addressing Mode to horizontal */
+	ssd1306_command(SSD1306_MEMORYMODE);
+	ssd1306_command(0x00);
+	
+	return 0;
+}
+
 int scrollGraphUpdate(int y)
 {
 	int i, page, pixel;

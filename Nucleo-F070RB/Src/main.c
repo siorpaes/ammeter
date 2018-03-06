@@ -91,7 +91,7 @@ int main(void)
   /* USER CODE BEGIN 1 */
 	float current, busVoltage, shuntVoltage, power;
 	char caption[32];
-	int i, nSamples, n;
+	int i, nSamples;
 	int minVal, maxVal;
   /* USER CODE END 1 */
 
@@ -169,20 +169,30 @@ int main(void)
 		}
 			
 		/* Plot graph */
-		n = 0;
 		clearDisplay();
+				
 		for(i=0; i<GRAPH_WIDTH-1; i++){
-			drawLine(i, GRAPH_HEIGTH-contBuffer[n*GRAPH_WIDTH+i], i+1, GRAPH_HEIGTH-contBuffer[n*GRAPH_WIDTH+i+1], WHITE);
+			drawLine(i, GRAPH_HEIGTH-contBuffer[i], i+1, GRAPH_HEIGTH-contBuffer[i+1], WHITE);
 		}
 		display();
-
+		
+		/* Scroll the rest of the graph */
 		scrollGraphInit(7);
+
+		for(i=GRAPH_WIDTH; i<nSamples; i++)
+			scrollGraphUpdate(GRAPH_HEIGTH-contBuffer[i]);
+		
+		scrollGraphDeinit();
+
+#if 0
 		while(1){
 			scrollGraphUpdate(n);
 			
 			n++;
 			n %=64;
 		}
+#endif
+
 	}
 #endif
 	

@@ -144,6 +144,7 @@ int getWidth(void);
 int getHeight(void);
 
 int scrollGraphInit(int endPage);
+int scrollGraphDeinit(void);
 int scrollGraphUpdate(int y);
 
 
