@@ -207,7 +207,7 @@ void display(void)
     ssd1306_command(1); // Page end address
 #endif
 
-	HAL_I2C_Master_Transmit(i2cHandle, SSD1306_ADDR, framebuffer, sizeof(framebuffer), 0xffffffff);
+	HAL_I2C_Master_Transmit(i2cHandle, SSD1306_ADDR, framebuffer, sizeof(framebuffer), HAL_MAX_DELAY);
 }
 
 // the most basic function, set a single pixel
@@ -256,7 +256,7 @@ void ssd1306_command(uint8_t c) {
 
 	buf[0] = 0;
 	buf[1] = c;
-	err = HAL_I2C_Master_Transmit(i2cHandle, SSD1306_ADDR, buf, 2, 0xffffffff);
+	err = HAL_I2C_Master_Transmit(i2cHandle, SSD1306_ADDR, buf, 2, HAL_MAX_DELAY);
 	if(err != HAL_OK)
 		while(1);
 }
@@ -651,6 +651,10 @@ int scrollGraphDeinit(void)
 	return 0;
 }
 
+
+/** Updates scrolling graph with new data
+ * @param y Data to plot
+ */
 int scrollGraphUpdate(int y)
 {
 	int i, page, pixel;
@@ -667,11 +671,41 @@ int scrollGraphUpdate(int y)
 	page = y >> 3;
 	pixel = y & 0x7;
 	
-	/* Draw pixe on last column */
+	/* Draw pixel on column */
 	lastColumn[page+1] = 1 << pixel;
 
 	/* Transmit last column only */
-	HAL_I2C_Master_Transmit(i2cHandle, SSD1306_ADDR, lastColumn, endPage+2, 0xffffffff);
+	HAL_I2C_Master_Transmit(i2cHandle, SSD1306_ADDR, lastColumn, endPage+2, HAL_MAX_DELAY);
 	
 	return 0;
 }	
+
+
+/** Updates scrolling graph with new data. Draws a line connecting the two pixels
+ * @param y0 First line edge
+ * @param y1 Second line edge
+ */
+int scrollGraphUpdateLine(int y0, int y1)
+{
+	int i, yy0, yy1;
+
+	/* Scroll one pixel left */
+	startscrollleft(0, endPage);
+	HAL_Delay(15);
+	stopscroll();
+
+	for(i=1; i<2+endPage; i++)
+		lastColumn[i] = 0;
+
+	/* Sort data */
+	yy0 = y0 <= y1 ? y0 : y1;
+	yy1 = y0 >  y1 ? y0 : y1;
+	
+	for(i=yy0; i<=yy1; i++)
+		lastColumn[(i>>3)+1] |= 1 << (i & 0x7);
+	
+	HAL_I2C_Master_Transmit(i2cHandle, SSD1306_ADDR, lastColumn, endPage+2, HAL_MAX_DELAY);
+	
+	return 0;
+}
+

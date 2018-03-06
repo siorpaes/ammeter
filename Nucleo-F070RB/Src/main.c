@@ -179,20 +179,10 @@ int main(void)
 		/* Scroll the rest of the graph */
 		scrollGraphInit(7);
 
-		for(i=GRAPH_WIDTH; i<nSamples; i++)
-			scrollGraphUpdate(GRAPH_HEIGTH-contBuffer[i]);
+		for(i=GRAPH_WIDTH; i<nSamples-1; i++)
+			scrollGraphUpdateLine(GRAPH_HEIGTH-contBuffer[i], GRAPH_HEIGTH-contBuffer[i+1]);
 		
 		scrollGraphDeinit();
-
-#if 0
-		while(1){
-			scrollGraphUpdate(n);
-			
-			n++;
-			n %=64;
-		}
-#endif
-
 	}
 #endif
 	

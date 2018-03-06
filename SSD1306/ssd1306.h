@@ -146,7 +146,7 @@ int getHeight(void);
 int scrollGraphInit(int endPage);
 int scrollGraphDeinit(void);
 int scrollGraphUpdate(int y);
-
+int scrollGraphUpdateLine(int y0, int y1);
 
 
 #endif /* _Adafruit_SSD1306_H_ */
