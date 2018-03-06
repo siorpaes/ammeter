@@ -216,5 +216,5 @@ int16_t getCurrent_raw(void);
 int16_t getPower_raw(void);
 int contMeasureInit(uint8_t reg);
 int contMeasureUpdate(void);
-
+int getNSamples(void);
 #endif

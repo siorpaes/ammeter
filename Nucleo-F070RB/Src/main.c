@@ -83,7 +83,6 @@ static void MX_I2C2_Init(void);
 #define GRAPH_WIDTH  (128)
 
 int16_t powerBuf[32];
-uint8_t lastColumn[9] = {0x40, 0, 0, 0, 0, 0, 0, 0, 0};
 /* USER CODE END 0 */
 
 int main(void)
@@ -177,40 +176,12 @@ int main(void)
 		}
 		display();
 
-		/* Now, we want to scroll and update the graph. We change radically the way the display is rendered
-		 * 1) Set Memory Addressing mode to Vertical Address mode. This means that columns are plotted vertically, one page (8 pixels) at a time
-		 * 2) We tell the display that the vertical display area is just ONE column wide. We choose last display column. Each time we write
-		 *    to the framebuffer, this column is rewritten.
-		 * 3) We scroll left ONE column (50ms delay between start/stop)
-		 * 4) We write ONLY one column, the last one.
- 		 */
-		
-		/* Set Memory Addressing Mode to Vertical */
-		ssd1306_command(SSD1306_MEMORYMODE);                    // 0x20
-		ssd1306_command(0x01);
-		
-		/* Wrap around last column */
-		ssd1306_command(SSD1306_COLUMNADDR);
-		ssd1306_command(SSD1306_LCDWIDTH-1);   // Column start address (0 = reset)
-		ssd1306_command(SSD1306_LCDWIDTH-1); // Column end address (127 = reset)
-
+		scrollGraphInit(7);
 		while(1){
-			extern I2C_HandleTypeDef* i2cHandle;
-			lastColumn[1] = n;
-			lastColumn[2] = n+1;
-			lastColumn[3] = n+2;
-			lastColumn[4] = n+3;
-			lastColumn[5] = n+4;
-			lastColumn[6] = n+5;
-			lastColumn[7] = n+6;
-			lastColumn[8] = n+7;
-
-			startscrollleft(0, 15);
-			HAL_Delay(50);
-			stopscroll();
-			HAL_I2C_Master_Transmit(i2cHandle, 0x78, lastColumn, sizeof(lastColumn), 0xffffffff);
+			scrollGraphUpdate(n);
+			
 			n++;
-			n&=0xff;
+			n %=64;
 		}
 	}
 #endif

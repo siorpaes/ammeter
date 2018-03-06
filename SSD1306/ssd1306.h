@@ -143,4 +143,9 @@ inline void drawFastHLineInternal(int16_t x, int16_t y, int16_t w, uint16_t colo
 int getWidth(void);
 int getHeight(void);
 
+int scrollGraphInit(int endPage);
+int scrollGraphUpdate(int y);
+
+
+
 #endif /* _Adafruit_SSD1306_H_ */

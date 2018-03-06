@@ -42,6 +42,11 @@ int16_t height = SSD1306_LCDHEIGHT;
 int WIDTH = SSD1306_LCDWIDTH;
 int HEIGHT = SSD1306_LCDHEIGHT;
 
+/* Scolling functions data */
+uint8_t lastColumn[9] = {0x40, 0, 0, 0, 0, 0, 0, 0, 0};
+int endPage;
+
+
 // the memory buffer for the LCD
 // http://en.radzio.dxp.pl/bitmap_converter/
 // Note that this includes the 0x40 prefix!!!
@@ -601,3 +606,61 @@ void ssd1306Demo(void)
 		HAL_Delay(5);
 	}
 }
+
+
+
+/* Graph scrolling APIs
+ * We want to scroll and update the graph. To do this efficiently, we change radically the way the display is rendered as follows:
+ * 1) Set Memory Addressing mode to Vertical Address mode. This means that columns are plotted vertically, one page (8 pixels) at a time
+ * 2) We tell the display that the vertical display area is just ONE column wide. We choose last display column. Each time we write
+ *    to the framebuffer, this column is rewritten.
+ * 3) We scroll left ONE column (50ms delay between start/stop)
+ * 4) We write ONLY one column, the last one.
+ * It is possible to select the height of the graph by choosing a scrolling area smaller than the whole screen
+ * Note that it is necesary to go back to page address mode to use other APIs again
+ */
+
+
+/** Initializes scroll graph region. Starts from 0.
+ */
+int scrollGraphInit(int endPageL)
+{
+	endPage = endPageL;
+	
+	/* Set Memory Addressing Mode to Vertical */
+	ssd1306_command(SSD1306_MEMORYMODE);
+	ssd1306_command(0x01);
+		
+	/* Wrap around last column */
+	ssd1306_command(SSD1306_COLUMNADDR);
+	ssd1306_command(SSD1306_LCDWIDTH-1);   // Column start address (127)
+	ssd1306_command(SSD1306_LCDWIDTH-1);   // Column end address (127)
+	
+	return 0;
+}
+
+
+int scrollGraphUpdate(int y)
+{
+	int i, page, pixel;
+
+	/* Scroll one pixel left */
+	startscrollleft(0, endPage);
+	HAL_Delay(15);
+	stopscroll();
+
+	for(i=1; i<2+endPage; i++)
+		lastColumn[i] = 0;
+
+	/* Locate page and pixel */
+	page = y >> 3;
+	pixel = y & 0x7;
+	
+	/* Draw pixe on last column */
+	lastColumn[page+1] = 1 << pixel;
+
+	/* Transmit last column only */
+	HAL_I2C_Master_Transmit(i2cHandle, SSD1306_ADDR, lastColumn, endPage+2, 0xffffffff);
+	
+	return 0;
+}	

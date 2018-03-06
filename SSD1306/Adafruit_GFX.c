@@ -887,4 +887,3 @@ void getTextBounds(const __FlashStringHelper *str,
 __weak void invertDisplay(int i) {
   // Do nothing, must be subclassed if supported by hardware
 }
-
