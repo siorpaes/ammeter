@@ -674,8 +674,9 @@ int scrollGraphUpdate(int y)
 	/* Draw pixel on column */
 	lastColumn[page+1] = 1 << pixel;
 
-	/* Transmit last column only */
-	HAL_I2C_Master_Transmit(i2cHandle, SSD1306_ADDR, lastColumn, endPage+2, HAL_MAX_DELAY);
+	/* Transmit last column only. Sent the full column so that the address pointer is consistent
+ 	 * for next transitions */
+	HAL_I2C_Master_Transmit(i2cHandle, SSD1306_ADDR, lastColumn, sizeof(lastColumn), HAL_MAX_DELAY);
 	
 	return 0;
 }	
@@ -704,7 +705,7 @@ int scrollGraphUpdateLine(int y0, int y1)
 	for(i=yy0; i<=yy1; i++)
 		lastColumn[(i>>3)+1] |= 1 << (i & 0x7);
 	
-	HAL_I2C_Master_Transmit(i2cHandle, SSD1306_ADDR, lastColumn, endPage+2, HAL_MAX_DELAY);
+	HAL_I2C_Master_Transmit(i2cHandle, SSD1306_ADDR, lastColumn, sizeof(lastColumn), HAL_MAX_DELAY);
 	
 	return 0;
 }

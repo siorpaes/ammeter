@@ -43,6 +43,10 @@ uint32_t ina219_calValue;
 int16_t contBuffer[BUFFERLEN];
 unsigned int bufferPos;
 
+/* Holds currently type of continuous measurement (voltage, power, current).
+ * Used to avoid floating point numbers prolification */
+int measureType;
+
 /**************************************************************************/
 /*! 
     @brief  Sends a single command byte over I2C
@@ -465,10 +469,14 @@ float getPower_mW() {
 }
 
 
-/* Initialize continuous measurement */
+/* Initialize continuous measurement.
+ * Sets register pointer to desired measurement type (current, bus voltage, shunt voltage, power).
+ * @param reg Device register
+ */
 int contMeasureInit(uint8_t reg)
 {
 	HAL_StatusTypeDef status;
+	measureType = reg;
 	
 	/* Set register pointer to desired register */
 	status = HAL_I2C_Master_Transmit(&hi2c1, INA219_ADDRESS<<1, &reg, 1, 0xffffffff);
@@ -502,6 +510,42 @@ int contMeasureUpdate(void)
 }
 
 
+/** Converts a given integer raw measure in actual floating point one
+ * @param rawValue Raw value as obtained from continuous measurement buffer
+ * @retval Actual floating point value of given raw measurement
+ */
+float convertMeasure(int rawValue)
+{
+	float val = rawValue;
+	
+	switch(measureType){
+		case INA219_REG_SHUNTVOLTAGE:
+			val *= 0.01;
+			break;
+		
+		case INA219_REG_BUSVOLTAGE:
+			val *= 0.001;
+			break;
+		
+		case INA219_REG_POWER:
+			val *= ina219_powerMultiplier_mW;
+			break;
+		
+		case INA219_REG_CURRENT:
+			val /= ina219_currentDivider_mA;
+			break;
+		
+		default:
+			val = -1;
+	}
+	
+	return val;
+}
+
+
+/** Returns the number of samples that have been acquired during continous measurement
+ * @retval Numner of samples acquired
+ */
 int getNSamples(void)
 {
 	return bufferPos;

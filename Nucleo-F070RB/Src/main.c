@@ -79,7 +79,7 @@ static void MX_I2C2_Init(void);
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
-#define GRAPH_HEIGTH (64)
+#define GRAPH_HEIGTH (64-16)
 #define GRAPH_WIDTH  (128)
 
 int16_t powerBuf[32];
@@ -127,7 +127,7 @@ int main(void)
 	display();
 	HAL_Delay(500);
 	Adafruit_GFX(getWidth(), getHeight());
-	setTextSize(2);
+	setTextSize(1);
 	setTextColor1(WHITE);
 	
   /* USER CODE END 2 */
@@ -168,16 +168,21 @@ int main(void)
 				contBuffer[i] = 1;
 		}
 			
-		/* Plot graph */
+		/* Display min/max power and plot graph */
 		clearDisplay();
-				
+
+		setCursor(0, 56);
+		sprintf(caption, "min/MAX: %1.1f/%1.1f mW", convertMeasure(minVal), convertMeasure(maxVal));
+		for(i=0; i<strlen(caption); i++)
+			write(caption[i]);
+		
 		for(i=0; i<GRAPH_WIDTH-1; i++){
 			drawLine(i, GRAPH_HEIGTH-contBuffer[i], i+1, GRAPH_HEIGTH-contBuffer[i+1], WHITE);
 		}
 		display();
 		
 		/* Scroll the rest of the graph */
-		scrollGraphInit(7);
+		scrollGraphInit(6);
 
 		for(i=GRAPH_WIDTH; i<nSamples-1; i++)
 			scrollGraphUpdateLine(GRAPH_HEIGTH-contBuffer[i], GRAPH_HEIGTH-contBuffer[i+1]);

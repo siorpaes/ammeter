@@ -215,6 +215,7 @@ int16_t getShuntVoltage_raw(void);
 int16_t getCurrent_raw(void);
 int16_t getPower_raw(void);
 int contMeasureInit(uint8_t reg);
+float convertMeasure(int rawValue);
 int contMeasureUpdate(void);
 int getNSamples(void);
 #endif
