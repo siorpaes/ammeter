@@ -127,7 +127,7 @@ int main(void)
 	display();
 	HAL_Delay(500);
 	Adafruit_GFX(getWidth(), getHeight());
-	setTextSize(1);
+	setTextSize(3);
 	setTextColor1(WHITE);
 	
   /* USER CODE END 2 */
@@ -136,11 +136,39 @@ int main(void)
   /* USER CODE BEGIN WHILE */
 	
 	while(1){
+		setTextSize(3);
+		
+		while(HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin) == GPIO_PIN_SET){
+			current = getCurrent_mA();
+			busVoltage = getBusVoltage_V();
+			shuntVoltage = getShuntVoltage_mV();
+			power = getPower_mW();
+
+			printf("%f mA, %f V %f mV %f mW\r\n", current, busVoltage, shuntVoltage, power);
+			
+			/* Print current and power on display */
+			clearDisplay();
+
+			setCursor(0, 0);
+			sprintf(caption, "%1.1f mA", current);
+			for(i=0; i<strlen(caption); i++)
+				write(caption[i]);
+
+			setCursor(0, 32);
+			sprintf(caption, "%1.1f mW", power);
+			for(i=0; i<strlen(caption); i++)
+				write(caption[i]);
+			
+			display();
+			
+			HAL_Delay(2);
+		}
+		
 		extern int16_t contBuffer[];
 		contMeasureInit(INA219_REG_POWER);
 		
 		/* Wait until button is pressed */
-		while(HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin) == GPIO_PIN_SET);
+		//while(HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin) == GPIO_PIN_SET);
 		HAL_TIM_Base_Start_IT(&htim6);
 
 		/* Wait until buttin is released */
@@ -171,7 +199,8 @@ int main(void)
 		clearDisplay();
 
 		setCursor(0, 56);
-		sprintf(caption, "min/MAX: %1.1f/%1.1f mW", convertMeasure(minVal), convertMeasure(maxVal));
+		setTextSize(1);
+		sprintf(caption, "min/MAX: %02.1f/%1.1f mW", convertMeasure(minVal), convertMeasure(maxVal));
 		for(i=0; i<strlen(caption); i++)
 			write(caption[i]);
 		
@@ -190,35 +219,10 @@ int main(void)
 		scrollGraphDeinit();
 	}
 	
-  while (1)
-  {
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
-		current = getCurrent_mA();
-		busVoltage = getBusVoltage_V();
-		shuntVoltage = getShuntVoltage_mV();
-		power = getPower_mW();
 
-		printf("%f mA, %f V %f mV %f mW\r\n", current, busVoltage, shuntVoltage, power);
-		
-		/* Print current and power on display */
-		clearDisplay();
-
-		setCursor(0, 0);
-		sprintf(caption, "%1.1f mA", current);
-		for(i=0; i<strlen(caption); i++)
-			write(caption[i]);
-
-		setCursor(0, 32);
-		sprintf(caption, "%1.1f mW", power);
-		for(i=0; i<strlen(caption); i++)
-			write(caption[i]);
-		
-		display();
-		
-		HAL_Delay(2);
-  }
   /* USER CODE END 3 */
 
 }
