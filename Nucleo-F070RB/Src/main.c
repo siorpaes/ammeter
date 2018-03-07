@@ -135,7 +135,6 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 	
-#if 1
 	while(1){
 		extern int16_t contBuffer[];
 		contMeasureInit(INA219_REG_POWER);
@@ -168,7 +167,7 @@ int main(void)
 				contBuffer[i] = 1;
 		}
 			
-		/* Display min/max power and plot graph */
+		/* Display min/max power */
 		clearDisplay();
 
 		setCursor(0, 56);
@@ -176,6 +175,7 @@ int main(void)
 		for(i=0; i<strlen(caption); i++)
 			write(caption[i]);
 		
+		/* Plot graph */
 		for(i=0; i<GRAPH_WIDTH-1; i++){
 			drawLine(i, GRAPH_HEIGTH-contBuffer[i], i+1, GRAPH_HEIGTH-contBuffer[i+1], WHITE);
 		}
@@ -189,7 +189,6 @@ int main(void)
 		
 		scrollGraphDeinit();
 	}
-#endif
 	
   while (1)
   {

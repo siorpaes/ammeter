@@ -1,4 +1,4 @@
-#Simple graphical ammeter
+# Simple graphical ammeter
 This project implements a very simple graphical ammeter running on STM32 devices.
 
 Hardware shopping list:
@@ -15,3 +15,5 @@ Hardware shopping list:
 | SSD1306 SCL  |   PB10   |      CN10-25     |
 | SSD1306 SDA  |   PB11   |      CN10-18     |
 
+
+Press button to start power measurements acquisition. Power mesure is sampled from INA219 at 1kHz and data is plotted later on.
