@@ -1,5 +1,5 @@
 # Simple graphical ammeter
-This project implements a very simple graphical ammeter running on STM32 devices.
+This project implements a very simple graphical ammeter/powermeter on STM32 devices.
 
 Hardware shopping list:
 
@@ -16,4 +16,8 @@ Hardware shopping list:
 | SSD1306 SDA  |   PB11   |      CN10-18     |
 
 
-Press button to start power measurements acquisition. Power mesure is sampled from INA219 at 1kHz and data is plotted later on.
+At reset the values of current and power is displayed in text form on the display.
+When pressing the Nucleo blue button, a power measurement acquisition at 1kHz sampling rate is started. 
+When acqusition is finished, either because the button is released or the interal buffer is filled, the acquired 
+data is displayed.
+
