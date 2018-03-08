@@ -150,12 +150,12 @@ int main(void)
 			clearDisplay();
 
 			setCursor(0, 0);
-			sprintf(caption, "%1.1f mA", current);
+			sprintf(caption, "%04.1f mA", current);
 			for(i=0; i<strlen(caption); i++)
 				write(caption[i]);
 
 			setCursor(0, 32);
-			sprintf(caption, "%1.1f mW", power);
+			sprintf(caption, "%04.1f mW", power);
 			for(i=0; i<strlen(caption); i++)
 				write(caption[i]);
 			
@@ -200,7 +200,7 @@ int main(void)
 
 		setCursor(0, 56);
 		setTextSize(1);
-		sprintf(caption, "min/MAX: %02.1f/%1.1f mW", convertMeasure(minVal), convertMeasure(maxVal));
+		sprintf(caption, "min/MAX: %04.1f/%04.1f mW", convertMeasure(minVal), convertMeasure(maxVal));
 		for(i=0; i<strlen(caption); i++)
 			write(caption[i]);
 		
