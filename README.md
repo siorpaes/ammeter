@@ -16,7 +16,7 @@ Hardware shopping list:
 | SSD1306 SDA  |   PB11   |      CN10-18     |
 
 
-At reset the values of current and power is displayed in text form on the display.
+At reset the values of current and power are displayed in text form on the display.
 When pressing the Nucleo blue button, a power measurement acquisition at 1kHz sampling rate is started. 
 When acqusition is finished, either because the button is released or the interal buffer is filled, the acquired 
 data is displayed.
