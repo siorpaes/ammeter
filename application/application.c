@@ -1,3 +1,7 @@
+/** @file application.c
+ * Data is sampled at 10kHz. See timer configuration.
+ */
+
 #include "main.h"
 
 /* TODO: fix this */
@@ -16,14 +20,10 @@
 #define GRAPH_HEIGTH (64-16)
 #define GRAPH_WIDTH  (128)
 
-float current, busVoltage, shuntVoltage, power;
-char caption[32];
-int i, nSamples;
-int minVal, maxVal;
 
+/* TODO: fix this */
 extern TIM_HandleTypeDef htim6;
 extern UART_HandleTypeDef huart2;
-
 
 int applicationInit(void)
 {
@@ -42,9 +42,17 @@ int applicationInit(void)
 
 int applicationLoop(void)
 {
+	float current, busVoltage, shuntVoltage, power;
+	char caption[32];
+	int i, nSamples;
+	int minVal, maxVal;
+	float average;
+	
+	extern int16_t contBuffer[];
+
 	setTextSize(3);
 		
-	/* Show measurements values until button is pressed */
+	/* Show instantaneous measurements values until button is pressed */
 	while(HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin) == GPIO_PIN_SET){
 		current = getCurrent_mA();
 		busVoltage = getBusVoltage_V();
@@ -71,11 +79,37 @@ int applicationLoop(void)
 		HAL_Delay(2);
 	}
 	
-	extern int16_t contBuffer[];
-	contMeasureInit(INA219_REG_POWER);
+	HAL_Delay(200);
 	
-	/* Wait until button is pressed */
-	//while(HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin) == GPIO_PIN_SET);
+	/* Show current average */
+	while(HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin) == GPIO_PIN_SET){
+		
+		/* Take continuous measurement values */
+		contMeasureInit(INA219_REG_CURRENT);
+		HAL_TIM_Base_Start_IT(&htim6);
+		HAL_Delay(200);
+		HAL_TIM_Base_Stop_IT(&htim6);
+		
+		/* Average values */
+		nSamples = getNSamples();
+		average = 0;
+		for(i=1; i<nSamples; i++){
+			average += convertMeasure(contBuffer[i]);
+		}
+		average /= (float)nSamples;
+		
+		/* Display */
+		clearDisplay();
+		setCursor(0, 0);
+		sprintf(caption, "%04.1f mA", average);
+		for(i=0; i<strlen(caption); i++)
+			write(caption[i]);
+		display();
+	}
+	
+	
+	/* Plot power graph */
+	contMeasureInit(INA219_REG_POWER);	
 	HAL_TIM_Base_Start_IT(&htim6);
 
 	/* Wait until buttin is released */
