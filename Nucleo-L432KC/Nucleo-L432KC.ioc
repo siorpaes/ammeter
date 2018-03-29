@@ -1,5 +1,12 @@
 #MicroXplorer Configuration settings - do not modify
 File.Version=6
+I2C1.I2C_Speed_Mode=I2C_Fast_Plus
+I2C1.IPParameters=I2C_Speed_Mode,Timing,Speed
+I2C1.Speed=800
+I2C1.Timing=0x00300E48
+I2C3.I2C_Speed_Mode=I2C_Fast
+I2C3.IPParameters=I2C_Speed_Mode,Timing
+I2C3.Timing=0x00702991
 KeepUserPlacement=true
 Mcu.Family=STM32L4
 Mcu.IP0=I2C1
@@ -168,8 +175,12 @@ RCC.VCOInputFreq_Value=4000000
 RCC.VCOOutputFreq_Value=160000000
 RCC.VCOSAI1OutputFreq_Value=32000000
 RCC.WatchDogFreq_Value=32000
-USART2.IPParameters=VirtualMode-Asynchronous
+TIM6.IPParameters=Prescaler,Period
+TIM6.Period=99
+TIM6.Prescaler=79
+USART2.IPParameters=VirtualMode-Asynchronous,WordLength
 USART2.VirtualMode-Asynchronous=VM_ASYNC
+USART2.WordLength=WORDLENGTH_8B
 VP_SYS_VS_Systick.Mode=SysTick
 VP_SYS_VS_Systick.Signal=SYS_VS_Systick
 VP_TIM6_VS_ClockSourceINT.Mode=Enable_Timer
