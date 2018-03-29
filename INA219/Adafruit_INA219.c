@@ -39,7 +39,7 @@ uint32_t ina219_powerMultiplier_mW;
 
 uint32_t ina219_calValue;
 
-#define BUFFERLEN 4096
+#define BUFFERLEN 2048
 int16_t contBuffer[BUFFERLEN];
 unsigned int bufferPos;
 

@@ -82,7 +82,6 @@ static void MX_I2C2_Init(void);
 #define GRAPH_HEIGTH (64-16)
 #define GRAPH_WIDTH  (128)
 
-int16_t powerBuf[32];
 /* USER CODE END 0 */
 
 int main(void)
@@ -138,6 +137,7 @@ int main(void)
 	while(1){
 		setTextSize(3);
 		
+		/* Show measurements values until button is pressed */
 		while(HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin) == GPIO_PIN_SET){
 			current = getCurrent_mA();
 			busVoltage = getBusVoltage_V();
