@@ -27,7 +27,12 @@
 #include <stdint.h>
 #include <string.h>
 #include "Adafruit_INA219.h"
+
+#if defined(STM32L432xx)
+#include "stm32l4xx_hal.h"
+#else
 #include "stm32f0xx_hal.h"
+#endif
 
 extern I2C_HandleTypeDef hi2c1 ;
 
@@ -520,11 +525,11 @@ float convertMeasure(int rawValue)
 	
 	switch(measureType){
 		case INA219_REG_SHUNTVOLTAGE:
-			val *= 0.01;
+			val *= 0.01f;
 			break;
 		
 		case INA219_REG_BUSVOLTAGE:
-			val *= 0.001;
+			val *= 0.001f;
 			break;
 		
 		case INA219_REG_POWER:

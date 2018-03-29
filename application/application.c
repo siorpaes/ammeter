@@ -1,0 +1,149 @@
+#include "main.h"
+
+/* TODO: fix this */
+#if defined(STM32L432xx)
+#include "stm32l4xx_hal.h"
+#else
+#include "stm32f0xx_hal.h"
+#endif
+
+#include <string.h>
+#include "Adafruit_INA219.h"
+#include "Adafruit_GFX.h"
+#include "ssd1306.h"
+#include "application.h"
+
+#define GRAPH_HEIGTH (64-16)
+#define GRAPH_WIDTH  (128)
+
+float current, busVoltage, shuntVoltage, power;
+char caption[32];
+int i, nSamples;
+int minVal, maxVal;
+
+extern TIM_HandleTypeDef htim6;
+extern UART_HandleTypeDef huart2;
+
+
+int applicationInit(void)
+{
+	setCalibration_16V_400mA();
+	//setCalibration_32V_1A();
+	ssd1306Init();
+	display();
+	HAL_Delay(500);
+	Adafruit_GFX(getWidth(), getHeight());
+	setTextSize(3);
+	setTextColor1(WHITE);
+	
+	return 0;
+}
+
+
+int applicationLoop(void)
+{
+	setTextSize(3);
+		
+	/* Show measurements values until button is pressed */
+	while(HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin) == GPIO_PIN_SET){
+		current = getCurrent_mA();
+		busVoltage = getBusVoltage_V();
+		shuntVoltage = getShuntVoltage_mV();
+		power = getPower_mW();
+
+		printf("%f mA, %f V %f mV %f mW\r\n", current, busVoltage, shuntVoltage, power);
+		
+		/* Print current and power on display */
+		clearDisplay();
+
+		setCursor(0, 0);
+		sprintf(caption, "%04.1f mA", current);
+		for(i=0; i<strlen(caption); i++)
+			write(caption[i]);
+
+		setCursor(0, 32);
+		sprintf(caption, "%04.1f mW", power);
+		for(i=0; i<strlen(caption); i++)
+			write(caption[i]);
+		
+		display();
+		
+		HAL_Delay(2);
+	}
+	
+	extern int16_t contBuffer[];
+	contMeasureInit(INA219_REG_POWER);
+	
+	/* Wait until button is pressed */
+	//while(HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin) == GPIO_PIN_SET);
+	HAL_TIM_Base_Start_IT(&htim6);
+
+	/* Wait until buttin is released */
+	while(HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin) == GPIO_PIN_RESET);
+	HAL_TIM_Base_Stop_IT(&htim6);
+	
+	nSamples = getNSamples();
+	minVal = maxVal = contBuffer[0];
+	for(i=1; i<nSamples; i++){
+		if(contBuffer[i] < minVal)
+			minVal = contBuffer[i];
+		if(contBuffer[i] > maxVal)
+			maxVal = contBuffer[i];
+	}
+
+	/* Normalize */
+	for(i=0; i<nSamples; i++)
+		contBuffer[i] -= minVal;
+
+	for(i=0; i<nSamples; i++){
+		contBuffer[i] *= (GRAPH_HEIGTH);
+		contBuffer[i] /= (maxVal - minVal);
+		if(contBuffer[i] == 0)
+			contBuffer[i] = 1;
+	}
+		
+	/* Display min/max power */
+	clearDisplay();
+
+	setCursor(0, 56);
+	setTextSize(1);
+	sprintf(caption, "min/MAX: %04.1f/%04.1f mW", convertMeasure(minVal), convertMeasure(maxVal));
+	for(i=0; i<strlen(caption); i++)
+		write(caption[i]);
+	
+	/* Plot graph */
+	for(i=0; i<GRAPH_WIDTH-1; i++){
+		drawLine(i, GRAPH_HEIGTH-contBuffer[i], i+1, GRAPH_HEIGTH-contBuffer[i+1], WHITE);
+	}
+	display();
+	
+	/* Scroll the rest of the graph */
+	scrollGraphInit(6);
+
+	for(i=GRAPH_WIDTH; i<nSamples-1; i++)
+		scrollGraphUpdateLine(GRAPH_HEIGTH-contBuffer[i], GRAPH_HEIGTH-contBuffer[i+1]);
+	
+	scrollGraphDeinit();
+	
+	return 0;
+}
+
+
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+	contMeasureUpdate();
+	
+	/* TODO: Fix this */
+#if defined(STM32L432xx)
+	HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);	
+#else
+	HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+#endif
+}
+
+
+int fputc(int c, FILE *stream)
+{
+	HAL_UART_Transmit(&huart2, (uint8_t*)&c, 1, HAL_MAX_DELAY);
+	return c;
+}

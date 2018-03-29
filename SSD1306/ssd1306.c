@@ -23,7 +23,14 @@ All text above, and the splash screen below must be included in any redistributi
 
 #include <stdlib.h>
 #include <string.h>
+
+//TODO: Fix this
+#if defined(STM32L432xx)
+#include "stm32l4xx_hal.h"
+#else
 #include "stm32f0xx_hal.h"
+#endif
+
 #include "ssd1306.h"
 #include "Adafruit_GFX.h"
 
@@ -31,8 +38,13 @@ All text above, and the splash screen below must be included in any redistributi
 #define SSD1306_ADDR (0x78)
 
 /* Todo: set I2C handler in init function */
+#if defined(STM32L432xx)
+extern I2C_HandleTypeDef hi2c1;
+I2C_HandleTypeDef* i2cHandle = &hi2c1;
+#else
 extern I2C_HandleTypeDef hi2c2;
 I2C_HandleTypeDef* i2cHandle = &hi2c2;
+#endif
 
 int8_t i2caddr;
 int8_t vccstate = 0;
