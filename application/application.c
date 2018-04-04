@@ -53,7 +53,7 @@ int applicationLoop(void)
 	setTextSize(3);
 		
 	/* Show instantaneous measurements values until button is pressed */
-	while(HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin) == GPIO_PIN_SET){
+	while(HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN) == GPIO_PIN_SET){
 		current = getCurrent_mA();
 		busVoltage = getBusVoltage_V();
 		shuntVoltage = getShuntVoltage_mV();
@@ -82,7 +82,7 @@ int applicationLoop(void)
 	HAL_Delay(200);
 	
 	/* Show current average */
-	while(HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin) == GPIO_PIN_SET){
+	while(HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN) == GPIO_PIN_SET){
 		
 		/* Take continuous measurement values */
 		contMeasureInit(INA219_REG_CURRENT);
@@ -113,12 +113,16 @@ int applicationLoop(void)
 	}
 	
 	
-	/* Plot power graph */
+	/* Plot power graph within trigger hi/lo */
+
+	/* Wait until trigger is asserted */
+	while(HAL_GPIO_ReadPin(TRIGGER_PORT, TRIGGER_PIN) == GPIO_PIN_RESET);
+	
 	contMeasureInit(INA219_REG_POWER);	
 	HAL_TIM_Base_Start_IT(&htim6);
 
-	/* Wait until buttin is released */
-	while(HAL_GPIO_ReadPin(B1_GPIO_Port, B1_Pin) == GPIO_PIN_RESET);
+	/* Wait until trigger is released */
+	while(HAL_GPIO_ReadPin(TRIGGER_PORT, TRIGGER_PIN) == GPIO_PIN_SET);
 	HAL_TIM_Base_Stop_IT(&htim6);
 	
 	nSamples = getNSamples();
