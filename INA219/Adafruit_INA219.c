@@ -34,7 +34,7 @@
 #include "stm32f0xx_hal.h"
 #endif
 
-extern I2C_HandleTypeDef hi2c1 ;
+extern I2C_HandleTypeDef hi2c1;
 
 
 // The following multipliers are used to convert raw current and power

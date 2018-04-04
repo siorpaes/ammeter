@@ -101,7 +101,12 @@ int applicationLoop(void)
 		/* Display */
 		clearDisplay();
 		setCursor(0, 0);
-		sprintf(caption, "%04.1f mA", average);
+
+		if(nSamples != 0)
+			sprintf(caption, "%04.1f mA", average);
+		else
+			sprintf(caption, "NaN");
+
 		for(i=0; i<strlen(caption); i++)
 			write(caption[i]);
 		display();

@@ -39,8 +39,8 @@ All text above, and the splash screen below must be included in any redistributi
 
 /* Todo: set I2C handler in init function */
 #if defined(STM32L432xx)
-extern I2C_HandleTypeDef hi2c1;
-I2C_HandleTypeDef* i2cHandle = &hi2c1;
+extern I2C_HandleTypeDef hi2c3;
+I2C_HandleTypeDef* i2cHandle = &hi2c3;
 #else
 extern I2C_HandleTypeDef hi2c2;
 I2C_HandleTypeDef* i2cHandle = &hi2c2;
