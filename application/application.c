@@ -46,7 +46,7 @@ int applicationLoop(void)
 	char caption[32];
 	int i, nSamples;
 	int minVal, maxVal, tmp;
-	float average;
+	float averagePower;
 	
 	extern int16_t contBuffer[];
 
@@ -85,25 +85,25 @@ int applicationLoop(void)
 	while(HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN) == GPIO_PIN_SET){
 
 		/* Take continuous measurement values */
-		contMeasureInit(INA219_REG_CURRENT);
+		contMeasureInit(INA219_REG_POWER);
 		HAL_TIM_Base_Start_IT(&htim6);
 		HAL_Delay(200);
 		HAL_TIM_Base_Stop_IT(&htim6);
 		
 		/* Average values */
 		nSamples = getNSamples();
-		average = 0;
+		averagePower = 0;
 		for(i=1; i<nSamples; i++){
-			average += convertMeasure(contBuffer[i]);
+			averagePower += convertMeasure(contBuffer[i]);
 		}
-		average /= (float)nSamples;
+		averagePower /= (float)nSamples;
 		
 		/* Display */
 		clearDisplay();
 		setCursor(0, 0);
 
 		if(nSamples != 0)
-			sprintf(caption, "%04.1fmA", average);
+			sprintf(caption, "%04.1fmW", averagePower);
 		else
 			sprintf(caption, "NaN");
 
@@ -156,7 +156,7 @@ int applicationLoop(void)
 	sprintf(caption, "m/M: %04.1f/%04.1f mW", convertMeasure(minVal), convertMeasure(maxVal));
 	for(i=0; i<strlen(caption); i++)
 		write(caption[i]);
-	
+
 	/* Plot graph */
 	for(i=0; i<GRAPH_WIDTH-1; i++){
 		drawLine(i, GRAPH_HEIGTH-contBuffer[i], i+1, GRAPH_HEIGTH-contBuffer[i+1], WHITE);
@@ -173,7 +173,8 @@ int applicationLoop(void)
 
 	/* Wait for button */
 	while(HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN) == GPIO_PIN_SET);
-	
+	HAL_Delay(200);
+
 	return 0;
 }
 
