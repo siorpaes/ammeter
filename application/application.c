@@ -27,8 +27,8 @@ extern UART_HandleTypeDef huart2;
 
 int applicationInit(void)
 {
-	setCalibration_16V_400mA();
-	//setCalibration_32V_1A();
+	//setCalibration_16V_400mA();
+	setCalibration_32V_1A();
 	ssd1306Init();
 	display();
 	HAL_Delay(500);
@@ -45,7 +45,7 @@ int applicationLoop(void)
 	float current, busVoltage, shuntVoltage, power;
 	char caption[32];
 	int i, nSamples;
-	int minVal, maxVal;
+	int minVal, maxVal, tmp;
 	float average;
 	
 	extern int16_t contBuffer[];
@@ -53,7 +53,7 @@ int applicationLoop(void)
 	setTextSize(3);
 		
 	/* Show instantaneous measurements values until button is pressed */
-	while(HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN) == GPIO_PIN_SET){
+	while(0 && HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN) == GPIO_PIN_SET){
 		current = getCurrent_mA();
 		busVoltage = getBusVoltage_V();
 		shuntVoltage = getShuntVoltage_mV();
@@ -65,12 +65,12 @@ int applicationLoop(void)
 		clearDisplay();
 
 		setCursor(0, 0);
-		sprintf(caption, "%04.1f mA", current);
+		sprintf(caption, "%04.1fmA", current);
 		for(i=0; i<strlen(caption); i++)
 			write(caption[i]);
 
 		setCursor(0, 32);
-		sprintf(caption, "%04.1f mW", power);
+		sprintf(caption, "%04.1fmW", power);
 		for(i=0; i<strlen(caption); i++)
 			write(caption[i]);
 		
@@ -83,7 +83,7 @@ int applicationLoop(void)
 	
 	/* Show current average */
 	while(HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN) == GPIO_PIN_SET){
-		
+
 		/* Take continuous measurement values */
 		contMeasureInit(INA219_REG_CURRENT);
 		HAL_TIM_Base_Start_IT(&htim6);
@@ -103,7 +103,7 @@ int applicationLoop(void)
 		setCursor(0, 0);
 
 		if(nSamples != 0)
-			sprintf(caption, "%04.1f mA", average);
+			sprintf(caption, "%04.1fmA", average);
 		else
 			sprintf(caption, "NaN");
 
@@ -112,12 +112,14 @@ int applicationLoop(void)
 		display();
 	}
 	
+	HAL_Delay(200);
 	
 	/* Plot power graph within trigger hi/lo */
 
-	/* Wait until trigger is asserted */
+	/* Wait a trigger full pulse */
+	while(HAL_GPIO_ReadPin(TRIGGER_PORT, TRIGGER_PIN) == GPIO_PIN_SET);
 	while(HAL_GPIO_ReadPin(TRIGGER_PORT, TRIGGER_PIN) == GPIO_PIN_RESET);
-	
+		
 	contMeasureInit(INA219_REG_POWER);	
 	HAL_TIM_Base_Start_IT(&htim6);
 
@@ -139,18 +141,19 @@ int applicationLoop(void)
 		contBuffer[i] -= minVal;
 
 	for(i=0; i<nSamples; i++){
-		contBuffer[i] *= (GRAPH_HEIGTH);
-		contBuffer[i] /= (maxVal - minVal);
-		if(contBuffer[i] == 0)
-			contBuffer[i] = 1;
+		tmp = contBuffer[i]; //Prevent overflow
+		tmp *= GRAPH_HEIGTH;
+		tmp /= (maxVal - minVal);
+		contBuffer[i] = tmp;
 	}
-		
+
+	
 	/* Display min/max power */
 	clearDisplay();
 
 	setCursor(0, 56);
 	setTextSize(1);
-	sprintf(caption, "min/MAX: %04.1f/%04.1f mW", convertMeasure(minVal), convertMeasure(maxVal));
+	sprintf(caption, "m/M: %04.1f/%04.1f mW", convertMeasure(minVal), convertMeasure(maxVal));
 	for(i=0; i<strlen(caption); i++)
 		write(caption[i]);
 	
@@ -167,6 +170,9 @@ int applicationLoop(void)
 		scrollGraphUpdateLine(GRAPH_HEIGTH-contBuffer[i], GRAPH_HEIGTH-contBuffer[i+1]);
 	
 	scrollGraphDeinit();
+
+	/* Wait for button */
+	while(HAL_GPIO_ReadPin(BUTTON_PORT, BUTTON_PIN) == GPIO_PIN_SET);
 	
 	return 0;
 }

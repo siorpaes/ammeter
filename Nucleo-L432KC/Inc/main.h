@@ -53,6 +53,8 @@
 #define VCP_TX_GPIO_Port GPIOA
 #define B1_Pin GPIO_PIN_3
 #define B1_GPIO_Port GPIOA
+#define TRG_Pin GPIO_PIN_1
+#define TRG_GPIO_Port GPIOB
 #define SWDIO_Pin GPIO_PIN_13
 #define SWDIO_GPIO_Port GPIOA
 #define SWCLK_Pin GPIO_PIN_14
