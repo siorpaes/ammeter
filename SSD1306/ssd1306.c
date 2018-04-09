@@ -634,6 +634,8 @@ void ssd1306Demo(void)
 
 
 /** Initializes scroll graph region. Starts from 0.
+ * @arg endPageL amount of pages to scroll horizontally - 1.
+ * Each page corresponds to 8 pixels.
  */
 int scrollGraphInit(int endPageL)
 {

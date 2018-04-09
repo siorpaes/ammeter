@@ -17,7 +17,7 @@
 #include "ssd1306.h"
 #include "application.h"
 
-#define GRAPH_HEIGTH (64-16)
+#define GRAPH_HEIGTH (64-12)
 #define GRAPH_WIDTH  (128)
 
 
